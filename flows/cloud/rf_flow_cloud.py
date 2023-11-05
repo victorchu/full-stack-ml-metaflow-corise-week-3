@@ -18,7 +18,7 @@ class RF_Flow_cloud(FlowSpec):
         # Import scikit-learn dataset library
         from sklearn import datasets
 
-        # Load dataset
+        # Load dataset (Iris)
         self.iris = datasets.load_iris()
         self.X = self.iris["data"]
         self.y = self.iris["target"]
@@ -32,6 +32,7 @@ class RF_Flow_cloud(FlowSpec):
         """
         from sklearn.ensemble import RandomForestClassifier
 
+        # Create the classifier (clf)
         self.clf = RandomForestClassifier(
             n_estimators=10, max_depth=None, min_samples_split=2, random_state=0
         )
@@ -45,7 +46,9 @@ class RF_Flow_cloud(FlowSpec):
         """
         from sklearn.model_selection import cross_val_score
 
+        # Get the best cross-validation score
         self.scores = cross_val_score(self.clf, self.X, self.y, cv=5)
+        print(f"scores = {self.scores}")
         self.next(self.end)
 
     @conda(libraries={"scikit-learn": "1.1.1"}, python="3.10.10")

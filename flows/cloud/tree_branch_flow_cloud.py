@@ -20,13 +20,14 @@ class Branch_Flow_Cloud(FlowSpec):
         self.iris = datasets.load_iris()
         self.X = self.iris["data"]
         self.y = self.iris["target"]
+        # Run three models in parallel.
         self.next(self.rf_model, self.xt_model, self.dt_model)
 
     @conda(libraries={"scikit-learn": "1.1.1"}, python="3.10.10")
     @step
     def rf_model(self):
         """
-        build random forest model
+        1. Build random forest model
         """
         from sklearn.ensemble import RandomForestClassifier
         from sklearn.model_selection import cross_val_score
@@ -41,7 +42,7 @@ class Branch_Flow_Cloud(FlowSpec):
     @step
     def xt_model(self):
         """
-        build extra trees classifier
+        2. Build extra trees classifier
         """
         from sklearn.ensemble import ExtraTreesClassifier
         from sklearn.model_selection import cross_val_score
@@ -49,7 +50,6 @@ class Branch_Flow_Cloud(FlowSpec):
         self.clf = ExtraTreesClassifier(
             n_estimators=10, max_depth=None, min_samples_split=2, random_state=0
         )
-
         self.scores = cross_val_score(self.clf, self.X, self.y, cv=5)
         self.next(self.choose_model)
 
@@ -57,7 +57,7 @@ class Branch_Flow_Cloud(FlowSpec):
     @step
     def dt_model(self):
         """
-        build decision tree classifier
+        3. Build decision tree classifier
         """
         from sklearn.tree import DecisionTreeClassifier
         from sklearn.model_selection import cross_val_score
@@ -65,9 +65,7 @@ class Branch_Flow_Cloud(FlowSpec):
         self.clf = DecisionTreeClassifier(
             max_depth=None, min_samples_split=2, random_state=0
         )
-
         self.scores = cross_val_score(self.clf, self.X, self.y, cv=5)
-
         self.next(self.choose_model)
 
     @conda(libraries={"scikit-learn": "1.1.1"}, python="3.10.10")
@@ -91,8 +89,9 @@ class Branch_Flow_Cloud(FlowSpec):
         """
         End of flow, yo!
         """
+        print(f"Selected model = {self.model}")
         print("Scores:")
-        print("\n".join("%s %f" % res for res in self.results))
+        print("\n".join("- %s %f" % res for res in self.results))
 
 
 if __name__ == "__main__":

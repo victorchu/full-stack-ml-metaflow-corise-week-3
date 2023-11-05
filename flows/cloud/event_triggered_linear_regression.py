@@ -10,7 +10,7 @@ DATETIME_FORMAT = "%Y-%m-%d %H:%M:%S"
     libraries={
         "pandas": "1.4.2",
         "pyarrow": "11.0.0",
-        "numpy": "1.21.2",
+        # "numpy": "1.21.2",
         "scikit-learn": "1.1.2",
     }
 )
@@ -22,7 +22,12 @@ class TaxiFarePrediction(FlowSpec):
         # Try to complete tasks 2 and 3 with this function doing nothing like it currently is.
         # Understand what is happening.
         # Revisit task 1 and think about what might go in this function.
+        idx = (df.fare_amount > 0)
+        idx &= (df.trip_distance <= 100)
+        idx &= (df.trip_distance > 0)
+        idx &= (df.tip_amount >= 0)
 
+        df = df[idx]
         return df
 
     @step
@@ -30,7 +35,8 @@ class TaxiFarePrediction(FlowSpec):
         import pandas as pd
         from sklearn.model_selection import train_test_split
 
-        self.df = self.transform_features(pd.read_parquet(self.data_url))
+        df = pd.read_parquet(self.data_url)
+        self.df = self.transform_features(df)
 
         # NOTE: we are split into training and validation set in the validation step which uses cross_val_score.
         # This is a simple/naive way to do this, and is meant to keep this example simple, to focus learning on deploying Metaflow flows.
@@ -46,6 +52,7 @@ class TaxiFarePrediction(FlowSpec):
 
         # TODO: Play around with the model if you are feeling it.
         self.model = LinearRegression()
+        # self.model.fit(self.X, self.y)
 
         self.next(self.validate)
 
